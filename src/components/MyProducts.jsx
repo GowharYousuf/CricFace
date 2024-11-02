@@ -139,8 +139,8 @@ const MyProducts = () => {
     return (
         <div className="container mx-auto px-4 text-white">
             <div className="flex justify-between m-3">
-                <span className="bg-green-500 text-white px-4 py-2 rounded mt-1 mb-2">My Products</span>
-                <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mt-1 mb-2">Add New Product</button>
+                <span className="text-green-500 text-bold  text-2xl px-4 py-2 mt-1 mb-2">My Products</span>
+                <button onClick={openModal} className="bg-green-500 text-white px-4 py-2 rounded mt-1 mb-2">Add New Product</button>
             </div>
             <Modal
                 isOpen={modalIsOpen}
@@ -199,7 +199,7 @@ const MyProducts = () => {
                                     Delete Product
                                 </button>
                                 <button
-                                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
                                     onClick={() => handleEditProduct(product.product_id)}
                                 >
                                     Edit Product

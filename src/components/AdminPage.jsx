@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useTable } from 'react-table';
+import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported
 
 function AdminPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,11 +36,68 @@ function AdminPage() {
         setFilteredProducts(filteredProducts);
     };
 
-
     const productsToDisplay = searchTerm ? filteredProducts : products;
 
+    const columns = useMemo(() => [
+        { Header: 'ID', accessor: 'id' },
+        { Header: 'Product Name', accessor: 'name' },
+        { 
+            Header: 'Ordered By', 
+            accessor: 'orderedBy', 
+            Cell: ({ row }) => (
+                <div>
+                    {row.original.orders.map((order, index) => (
+                        <div key={index}>{order.name}</div>
+                    ))}
+                </div>
+            )
+        },
+        { 
+            Header: 'Status', 
+            accessor: 'status', 
+            Cell: ({ row }) => (
+                <div>
+                    {row.original.orders.map((order, index) => (
+                        <div key={index}>{order.status}</div>
+                    ))}
+                </div>
+            )
+        },
+        { 
+            Header: 'Payment Status', 
+            accessor: 'paymentStatus', 
+            Cell: ({ row }) => (
+                <div>
+                    {row.original.orders.map((order, index) => (
+                        <div key={index}>{order.paymentStatus}</div>
+                    ))}
+                </div>
+            )
+        },
+        {
+            Header: 'Actions',
+            accessor: 'actions',
+            Cell: () => (
+                <div>
+                    <button onClick={openModal} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Edit</button>
+                    <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
+                </div>
+            )
+        }
+    ], []);
+
+    const tableInstance = useTable({ columns, data: productsToDisplay });
+
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+    } = tableInstance;
+
     return (
-        <div className="container mx-auto mb-3 ">
+        <div className="container mx-auto mb-3">
             <h3 className="text-white text-3xl font-medium">My Orders</h3>
             <div className="mt-4">
                 <div className="mt-6">
@@ -50,57 +109,36 @@ function AdminPage() {
                             value={searchTerm}
                             onChange={handleSearch}
                         />
-                        <button
-                            className="w-40 bg-blue-500 text-white font-semibold py-2 px-3 rounded-md hover:bg-blue-700"
-                            // onClick={handleAddProduct}
-                        >
-                            Add New Product
-                        </button>
                     </div>
-
-
-                    <table className="w-3/4 table-auto container p-10 m-4">
+                    <table {...getTableProps()} className="min-w-full bg-white table-auto container rounded p-4 m-2">
                         <thead>
-                            <tr className="bg-indigo-800 text-left text-gray-100">
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">ID</th>
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">Product Name</th>
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">Ordered By</th>
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">Status</th>
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">Payment Status</th>
-                                <th className="py-4 px-6 pl-2 font-medium uppercase text-sm">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productsToDisplay.map(product => (
-                                <tr key={product.id} className="bg-white text-gray-700" style={{ marginLeft: '20px' }}>
-                                    <td className="py-2 px-6 border-b border-gray-200 text-lg">{product.id}</td>
-                                    <td className="py-2 px-6 border-b border-gray-200">{product.name}</td>
-                                    <td className="py-2 px-6 border-b border-gray-200">
-                                        {product.orders.map((order, index) => (
-                                            <div key={index}>{order.name}</div>
-                                        ))}
-                                    </td>
-                                    <td className="py-4 px-6 border-b border-gray-200">
-                                        {product.orders.map((order, index) => (
-                                            <div key={index}>{order.status}</div>
-                                        ))}
-                                    </td>
-                                    <td className="py-4 px-6 border-b border-gray-200">
-                                        {product.orders.map((order, index) => (
-                                            <div key={index}>{order.paymentStatus}</div>
-                                        ))}
-                                    </td>
-                                    <td className="py-4 px-6 border-b border-gray-200">
-                                        <button onClick={openModal} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Edit</button>
-                                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
-                                    </td>
+                            {headerGroups.map(headerGroup => (
+                                <tr {...headerGroup.getHeaderGroupProps()} className="bg-indigo-800 text-left text-gray-100">
+                                    {headerGroup.headers.map(column => (
+                                        <th {...column.getHeaderProps()} className="py-4 px-6 pl-2 font-medium uppercase text-sm">
+                                            {column.render('Header')}
+                                        </th>
+                                    ))}
                                 </tr>
                             ))}
+                        </thead>
+                        <tbody {...getTableBodyProps()}>
+                            {rows.map(row => {
+                                prepareRow(row);
+                                return (
+                                    <tr {...row.getRowProps()} className="bg-white text-gray-700 border-b border-gray-200">
+                                        {row.cells.map(cell => (
+                                            <td {...cell.getCellProps()} className="py-2 px-6">
+                                                {cell.render('Cell')}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
             </div>
-            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed z-10 inset-0 overflow-y-auto">
                     <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -114,7 +152,6 @@ function AdminPage() {
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                         <h3 className="text-lg leading-6 font-medium text-gray-900">Edit Order</h3>
                                         <div className="mt-2">
-                                            {/* Add your form elements here for editing order */}
                                             <button onClick={closeModal} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4">Close</button>
                                         </div>
                                     </div>

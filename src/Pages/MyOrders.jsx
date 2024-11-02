@@ -7,7 +7,7 @@ const MyOrders = () => {
     <AdminNavbar/>
     <br />
     <br/>
-     <AdminPage/>
+    <AdminPage/>
     </div>
   )
 }
